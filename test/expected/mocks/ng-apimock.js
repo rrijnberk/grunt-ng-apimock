@@ -15,7 +15,7 @@
      *
      * @param $httpBackend The httpBackend service.
      */
-    function Mock($httpBackend) {
+    function Mock($httpBackend, $log) {
         var passThroughs = [];
         // #1
         var mocks = JSON.parse(localStorage.getItem('mocks')) || {};
@@ -29,23 +29,26 @@
         for (var key in mocks) {
             if (mocks.hasOwnProperty(key)) {
                 var mock = mocks[key];
-                var response = mock['response'],
-                    statusCode = response.status ? response.status : 200,
-                    data = response.data,
-                    headers = response.headers ? response.headers : {},
-                    statusText = response.statusText ? response.statusText : undefined;
-
+                var response = mock['response'];
                 // #4
-                if(angular.isUndefined(response.status) && angular.isUndefined(response.data)){
+                if(mock.echo) {
+                    $httpBackend.when(mock['method'], new RegExp(mock['expression'])).respond(
+                        function (requestType, expression, requestData, requestHeaders) {
+                            $log.info(requestType + ' request made on \'' + expression + '\' with payload: ', requestData);
+                            var response = mocks[expression + '$$' + requestType].response;
+                            return [response.status || 200, response.data || {}, response.headers || {}, response.statusText || undefined];
+                        }
+                    )
+                } else if(angular.isUndefined(response.status) && angular.isUndefined(response.data)){
                     $httpBackend.when(mock['method'], new RegExp(mock['expression'])).passThrough();
                 } else {
-                    $httpBackend.when(mock['method'], new RegExp(mock['expression'])).respond(statusCode, data, headers, statusText);
+                    $httpBackend.when(mock['method'], new RegExp(mock['expression'])).respond(response.status || 200, response.data || {}, response.headers || {}, response.statusText || undefined);
                 }
             }
         }
     }
 
-    Mock.$inject = ['$httpBackend'];
+    Mock.$inject = ['$httpBackend', '$log'];
 
     angular.module('mock', ['ngMockE2E']);
     angular.module('mock').run(Mock);
