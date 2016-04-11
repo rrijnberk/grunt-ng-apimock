@@ -1,5 +1,7 @@
-(function() {
+(function () {
     'use strict';
+
+    var $compile;
 
     /**
      * Find the expression that matches.
@@ -26,10 +28,10 @@
      * @param data The data.
      * @return updatedData The updated data.
      */
-    function updateData(data, variables){
+    function updateData(data, variables) {
         var json = JSON.stringify(data);
-        Object.keys(variables).forEach(function(key) {
-            if(variables.hasOwnProperty(key)) {
+        Object.keys(variables).forEach(function (key) {
+            if (variables.hasOwnProperty(key)) {
                 json = json.replace(new RegExp("%%" + key + "%%", "g"), variables[key]);
             }
         });
@@ -85,9 +87,35 @@
         }
     }
 
+    window.onload = function () {
+        console.log('load');
+        var container = document.createElement('div'),
+            mi,
+            scope = angular.element(document.querySelector('body')).scope();
+
+        console.log(scope);
+        mi = $compile('<mock-interface></mock-interface>')(scope);
+        console.log(mi);
+
+        angular.element(container).append(mi);
+        document.querySelector('body').appendChild(container);
+    };
+
+    function storeCompileProvider(_$compile_, $window){
+        $compile = _$compile_;
+    }
+
     Mock.$inject = ['$httpBackend', '$log'];
 
-    angular.module('mock', ['ngMockE2E']);
+    angular.module('mock', ['ngMockE2E']).run(storeCompileProvider);
     angular.module('mock').run(Mock);
+
     angular.module('<%= moduleName %>').requires.push('mock');
+
+     angular.module('mock').directive('mockInterface', function () {
+       return {
+           restrict: 'E',
+           template: 'Hello world from directive'
+       };
+   });
 })();
