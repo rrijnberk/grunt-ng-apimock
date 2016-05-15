@@ -3,7 +3,7 @@
      * grunt-ng-apimock
      * https://github.com/mdasberg/grunt-ng-apimock
      *
-     * Copyright (c) 2015 Mischa Dasberg
+     * Copyright (c) 2015 Mischa Dasberg, Richard Rijnberk
      * Licensed under the MIT license.
      */
 
@@ -51,7 +51,7 @@
                 protractor: {
                     options: {
                         keepAlive: true,
-                        noColor: false,
+                        noColor: false
                     },
                     local: {
                         options: {
